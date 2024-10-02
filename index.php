@@ -7,15 +7,21 @@ if (isset($_POST['long_url'])){
     $result->bind_param("ss",$_POST['long_url'],$short_url);
     $result->execute();
     $result->close(); 
+    echo "Shortened URL: http://url_shortener_/$short_url";
 }
 
-if isset($_GET['short_code']){
+if (isset($_GET['short_code'])){
     $result = $mysqli->prepare("SELECT * FROM urls where short_code = ?");
     $result->bind_param("s",$_GET['short_code']);
     $result->execute();
-    $goto = $result->get_result()->ferch_array();
-    $g = $goto[1];
-    header("Location:$g");
+    $goto = $result->get_result()->fetch_array();
+    if ($goto) {
+        $g = $goto['long_url'];
+        header("Location: $g");
+        exit();
+    } else {
+        echo "URL not found!";
+    }
 }
 
 ?>
