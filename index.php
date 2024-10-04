@@ -20,7 +20,7 @@ if (isset($_POST['long_url'])){
         $insert->close();
     } 
     $result->close();
-    echo "Shortened URL: http://localhost/url_shortener/$short_url";
+    $shortened_url= "$short_url" ;
 }
 
 if (isset($_GET['short_code'])){
@@ -43,18 +43,24 @@ if (isset($_GET['short_code'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>URLshortener</title>
 </head>
 <body>
 <?php if ($url_not_found): ?>
     <h1>URL Not Found</h1>
 <?php else: ?>
+    <div class="container">
     <h1>URL Shortener</h1>
     <form method="POST">
         <label for="long_url">Enter URL:</label>
         <input type="url" id="long_url" name="long_url" required>
         <button type="submit">Shorten URL</button>
     </form>
+    <?php if ($shortened_url): ?>
+        <p class="shortened-url">Shortened URL: <a href="<?php echo $shortened_url; ?>"><?php echo $shortened_url; ?></a></p>
+    <?php endif; ?>
+    </div>
 <?php endif; ?>
 </body>
 </html>
