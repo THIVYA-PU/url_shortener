@@ -1,13 +1,26 @@
 <?php
 include 'config.php';
+$url_not_found = false;
 if (isset($_POST['long_url'])){
-    $code = md5(uniqid(rand(1,5000),true));
-    $short_url = substr($code,0,6);
-    $result = $mysqli->prepare("INSERT into urls (long_url,short_code) VALUES (?,?)");
-    $result->bind_param("ss",$_POST['long_url'],$short_url);
+    $long_url = $_POST['long_url'];
+    $result = $mysqli->prepare("SELECT short_code FROM urls where long_url = ?");
+    $result->bind_param("s",$long_url);
     $result->execute();
-    $result->close(); 
-    echo "Shortened URL: http://url_shortener_/$short_url";
+    $result->store_result();
+
+    if($result->num_rows>0){
+        $result->bind_result($short_url);
+        $result->fetch();
+    } else{
+        $code = md5(uniqid(rand(1,5000),true));
+        $short_url = substr($code,0,6);
+        $insert = $mysqli->prepare("INSERT into urls (long_url,short_code) VALUES (?,?)");
+        $insert->bind_param("ss",$_POST['long_url'],$short_url);
+        $insert->execute();
+        $insert->close();
+    } 
+    $result->close();
+    echo "Shortened URL: http://localhost/url_shortener/$short_url";
 }
 
 if (isset($_GET['short_code'])){
@@ -20,7 +33,7 @@ if (isset($_GET['short_code'])){
         header("Location: $g");
         exit();
     } else {
-        echo "URL not found!";
+        $url_not_found=true;
     }
 }
 
@@ -33,11 +46,15 @@ if (isset($_GET['short_code'])){
     <title>URLshortener</title>
 </head>
 <body>
-<h1>URL Shortener</h1>
-    <form  method="POST">
+<?php if ($url_not_found): ?>
+    <h1>URL Not Found</h1>
+<?php else: ?>
+    <h1>URL Shortener</h1>
+    <form method="POST">
         <label for="long_url">Enter URL:</label>
         <input type="url" id="long_url" name="long_url" required>
         <button type="submit">Shorten URL</button>
     </form>
+<?php endif; ?>
 </body>
 </html>
